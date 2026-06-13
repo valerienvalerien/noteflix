@@ -1,4 +1,4 @@
-import type { Item } from "./db";
+import type { Item } from "./types";
 
 function normalize(s: string): string {
   return s
@@ -14,7 +14,9 @@ function normalize(s: string): string {
  * Fast enough for thousands of items; the AI search handles the fuzzy cases.
  */
 export function localSearch(query: string, items: Item[]): Item[] {
-  const tokens = normalize(query).split(/\s+/).filter((t) => t.length > 1);
+  const tokens = normalize(query)
+    .split(/\s+/)
+    .filter((t) => t.length > 1);
   if (tokens.length === 0) return [];
 
   const scored = items

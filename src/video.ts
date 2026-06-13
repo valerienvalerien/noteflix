@@ -1,4 +1,4 @@
-import type { Platform } from "./db";
+import type { Platform } from "./types";
 
 export interface ParsedVideo {
   platform: Platform;
@@ -29,7 +29,7 @@ export function parseVideoUrl(rawUrl: string): ParsedVideo | null {
     return { platform: "youtube", videoId: null, canonicalUrl: rawUrl };
   }
 
-  // --- TikTok (full links carry the numeric id; short links resolved server-side) ---
+  // --- TikTok (full links carry the numeric id; short links resolved separately) ---
   if (host.endsWith("tiktok.com")) {
     const m = url.pathname.match(/\/video\/(\d+)/) || url.pathname.match(/\/v\/(\d+)/);
     return { platform: "tiktok", videoId: m ? m[1] : null, canonicalUrl: rawUrl };
@@ -53,7 +53,9 @@ export function buildEmbedUrl(
   switch (platform) {
     case "youtube":
       if (!videoId) return null;
-      return `https://www.youtube-nocookie.com/embed/${videoId}?${autoplay ? "autoplay=1&mute=1&" : ""}playsinline=1&rel=0`;
+      return `https://www.youtube-nocookie.com/embed/${videoId}?${
+        autoplay ? "autoplay=1&mute=1&" : ""
+      }playsinline=1&rel=0`;
     case "tiktok":
       if (!videoId) return null;
       return `https://www.tiktok.com/embed/v2/${videoId}`;

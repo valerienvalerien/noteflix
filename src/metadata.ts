@@ -1,22 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
-import { parseVideoUrl, youtubeThumbnail } from "@/lib/video";
+import { parseVideoUrl, youtubeThumbnail } from "./video";
+import type { Platform } from "./types";
+
+export interface ResolvedMeta {
+  platform: Platform;
+  video_id: string | null;
+  url: string;
+  title: string | null;
+  author: string | null;
+  thumbnail: string | null;
+}
 
 /**
  * Resolves a pasted URL into platform + video id + title/author/thumbnail
  * via the public oEmbed endpoints (YouTube, TikTok). Instagram has no public
- * oEmbed — the user fills the title manually.
+ * oEmbed — the user fills the title manually. Best-effort: never throws.
  */
-export async function POST(req: NextRequest) {
-  const { url } = await req.json();
-  if (!url) return NextResponse.json({ error: "url requise" }, { status: 400 });
+export async function resolveMetadata(rawUrl: string): Promise<ResolvedMeta | null> {
+  let parsed = parseVideoUrl(rawUrl);
+  if (!parsed) return null;
 
-  let parsed = parseVideoUrl(url);
-  if (!parsed) return NextResponse.json({ error: "URL invalide" }, { status: 400 });
-
-  // Short TikTok links (vm.tiktok.com / tiktok.com/t/...) need a redirect resolve
+  // Short TikTok links (vm.tiktok.com / tiktok.com/t/...) need a redirect resolve.
   if (parsed.platform === "tiktok" && !parsed.videoId) {
     try {
-      const res = await fetch(url, { method: "HEAD", redirect: "follow" });
+      const res = await fetch(rawUrl, { method: "GET", redirect: "follow" });
       const resolved = parseVideoUrl(res.url);
       if (resolved?.videoId) parsed = resolved;
     } catch {
@@ -41,7 +47,9 @@ export async function POST(req: NextRequest) {
       }
       if (!thumbnail && parsed.videoId) thumbnail = youtubeThumbnail(parsed.videoId);
     } else if (parsed.platform === "tiktok") {
-      const res = await fetch(`https://www.tiktok.com/oembed?url=${encodeURIComponent(parsed.canonicalUrl)}`);
+      const res = await fetch(
+        `https://www.tiktok.com/oembed?url=${encodeURIComponent(parsed.canonicalUrl)}`
+      );
       if (res.ok) {
         const data = await res.json();
         title = data.title ?? null;
@@ -56,12 +64,12 @@ export async function POST(req: NextRequest) {
     // metadata is best-effort; the form stays editable
   }
 
-  return NextResponse.json({
+  return {
     platform: parsed.platform,
     video_id: parsed.videoId,
     url: parsed.canonicalUrl,
     title,
     author,
     thumbnail,
-  });
+  };
 }

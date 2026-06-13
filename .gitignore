@@ -1,18 +1,27 @@
 # dependencies
-/node_modules
+node_modules/
 
-# next.js
-/.next/
-/out/
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
 
-# local database
-/data/
+# Native
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
 
-# env
-.env
-.env.local
+# Metro
+.metro-health-check*
 
 # misc
 .DS_Store
 *.tsbuildinfo
-next-env.d.ts
+
+# env
+.env
+.env*.local
