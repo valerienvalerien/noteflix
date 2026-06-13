@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import type { Item } from "../types";
-import { recommend, Recommendation } from "../ai";
+import { recommend, Recommendation } from "../data";
 import { colors } from "../theme";
 
 export default function RecommendModal({
@@ -35,7 +35,7 @@ export default function RecommendModal({
     setError(null);
     setSuggestions(null);
     try {
-      const result = await recommend(theme.trim() || null, items);
+      const result = await recommend(theme.trim() || null);
       setSuggestions(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur");

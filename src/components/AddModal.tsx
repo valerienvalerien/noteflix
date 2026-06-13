@@ -13,20 +13,22 @@ import {
 } from "react-native";
 import type { Category, Item } from "../types";
 import { resolveMetadata, ResolvedMeta } from "../metadata";
-import { createItem } from "../db";
+import { createItem } from "../data";
 import { colors } from "../theme";
 
 export default function AddModal({
   categories,
+  initialUrl,
   onClose,
   onCreated,
 }: {
   categories: Category[];
+  initialUrl?: string | null;
   onClose: () => void;
   onCreated: (item: Item) => void;
 }) {
   const [mode, setMode] = useState<"video" | "idea">("video");
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl ?? "");
   const [meta, setMeta] = useState<ResolvedMeta | null>(null);
   const [fetchingMeta, setFetchingMeta] = useState(false);
   const [title, setTitle] = useState("");

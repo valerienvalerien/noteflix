@@ -3,6 +3,7 @@ import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import type { Item } from "../types";
 import { colors, IDEA_GRADIENTS, PLATFORM_BADGE } from "../theme";
+import { hashIndex } from "../util";
 
 export default function Card({
   item,
@@ -14,7 +15,7 @@ export default function Card({
   onOpen: (item: Item) => void;
 }) {
   const badge = item.type === "idea" ? null : PLATFORM_BADGE[item.platform ?? "other"];
-  const gradient = IDEA_GRADIENTS[item.id % IDEA_GRADIENTS.length];
+  const gradient = IDEA_GRADIENTS[hashIndex(item.id, IDEA_GRADIENTS.length)];
 
   return (
     <Pressable

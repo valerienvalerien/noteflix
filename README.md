@@ -1,60 +1,75 @@
-# Noteflix 🎬 (mobile)
+# Noteflix 🎬
 
-Ta mémoire vidéo personnelle, façon Netflix — **app mobile iOS & Android** (Expo / React Native). Sauvegarde des vidéos (YouTube/Shorts, TikTok, Instagram) et des idées, puis **retrouve-les des mois plus tard à partir d'une simple description en langage naturel** — là où les favoris YouTube/TikTok/Instagram échouent.
+Ton **second cerveau vidéo**, façon Netflix / Prime Video — **app mobile iOS & Android**
+(Expo / React Native) adossée à un backend **Supabase**. Sauvegarde des vidéos
+(YouTube/Shorts, TikTok, Instagram) et des idées, puis **retrouve-les des mois plus
+tard à partir d'une simple description en langage naturel** — là où les favoris
+YouTube/TikTok/Instagram échouent.
 
-Tout vit **sur ton téléphone** : base de données locale (SQLite), aucune donnée envoyée ailleurs qu'à l'API Claude pour les fonctions IA. Pas de serveur à héberger.
+C'est un vrai **SaaS cloud** : compte utilisateur, synchro entre appareils, et
+**vraie recherche sémantique** (embeddings vectoriels pgvector + Claude), pas un
+simple stockage local.
 
-## Démarrage
-
-```bash
-npm install
-npm start          # ouvre Expo ; scanne le QR code avec l'app Expo Go
-```
-
-- **Sur ton téléphone** : installe **Expo Go** (App Store / Play Store), puis scanne le QR code affiché par `npm start`.
-- **Émulateur** : `npm run android` ou `npm run ios` (iOS nécessite un Mac).
-
-Au premier lancement, ouvre **⚙ Réglages** et colle ta **clé API Anthropic** (`sk-ant-…`, depuis console.anthropic.com). Elle est stockée de façon **sécurisée sur l'appareil** (`expo-secure-store`). Sans clé, la bibliothèque et la recherche instantanée fonctionnent ; seules les fonctions IA sont désactivées.
+> 🚀 **Déploiement** : voir **[SETUP.md](./SETUP.md)** (créer le projet Supabase,
+> appliquer les migrations, déployer les Edge Functions, poser le secret Claude).
 
 ## Fonctionnalités
 
-- **Ajout en un collage** : colle une URL, le titre / l'auteur / la miniature sont récupérés automatiquement (oEmbed YouTube & TikTok). Mode « Idée » pour les notes en texte libre.
-- **Description personnelle** : à chaque ajout, tu notes *pourquoi tu gardes* l'item — c'est le carburant de la recherche.
-- **UI façon Netflix** : thème sombre, rangées horizontales par catégorie, rangée « Ajouts récents ».
-- **Lecture intégrée** : embed dans une `WebView` (YouTube nocookie, TikTok v2, Instagram), avec « Ouvrir l'original » en repli.
-- **Recherche double** :
-  - ⚡ **Instantanée** (locale, insensible aux accents) pendant la frappe.
-  - ✨ **IA** : décris vaguement ce que tu cherches (« le gars qui apprend le mandarin avec des post-its ») — Claude analyse ta bibliothèque et retourne les items pertinents avec la raison du match.
-- **Recommandations à la demande** : « Suggère-moi » → Claude propose quoi *revoir* dans ta bibliothèque et quoi *explorer* (avec liens de recherche YouTube), optionnellement sur un thème.
+- **Ajout en un collage** : colle une URL → titre / auteur / miniature récupérés
+  automatiquement (oEmbed). Détection du presse-papier (« Coller le lien copié »).
+  Mode « Idée » pour les notes en texte libre.
+- **Recherche sémantique** : décris vaguement ce que tu cherches (« le gars qui gère
+  une objection prix en 30 secondes ») — embedding de la requête → plus proches
+  voisins pgvector → Claude re-classe et explique. Plus une recherche instantanée
+  locale pendant la frappe.
+- **Accueil façon Netflix/Prime** : bannière héros, rangées « Ajouts récents » /
+  « Reprendre » / par catégorie, navigation par onglets.
+- **Lecture intégrée** : embed dans une `WebView` (YouTube nocookie, TikTok, Instagram).
+- **Recommandations** : « Suggère-moi » → Claude propose quoi *revoir* et quoi *explorer*.
+- **Parcours d'apprentissage IA** : « Apprends le closing en 30 jours » → Claude bâtit
+  un parcours progressif à partir de TA bibliothèque.
 
 ## Stack
 
 - **Expo (SDK 56)** + React Native 0.85 + React 19 + TypeScript
-- **expo-sqlite** : base locale `noteflix.db` sur l'appareil
-- **expo-secure-store** : stockage chiffré de la clé API
-- **react-native-webview** : lecture des embeds vidéo
-- **Claude API** (`claude-opus-4-8`) appelée directement depuis l'app, avec sorties structurées (tool use) pour la recherche sémantique et les recommandations
+- **Supabase** : Postgres + **pgvector**, Auth (email + mot de passe), RLS par
+  utilisateur, **Edge Functions** (Deno)
+- **Embeddings** : `gte-small` (384 dim) via le runtime Edge de Supabase (gratuit, swappable)
+- **Claude API** (`claude-opus-4-8`) — appelée **uniquement côté serveur** (clé en
+  secret Supabase, jamais sur l'appareil)
+- **@react-navigation** (onglets) · **react-native-webview** (lecture)
 
 ## Architecture
 
 ```
-App.tsx                    # écran principal (header, recherche, rangées, modales)
-index.ts                   # point d'entrée (polyfill URL + registerRootComponent)
+App.tsx                         # providers + auth gate + onglets + modales globales
 src/
-  types.ts                 # Item, Category, Platform
-  theme.ts                 # palette sombre + badges
-  db.ts                    # SQLite local (items, categories) — API async
-  video.ts                 # parsing d'URL + construction des embeds
-  search.ts                # scoring local insensible aux accents
-  metadata.ts              # résolution oEmbed d'une URL collée
-  ai.ts                    # appels Claude (Messages API + tool use)
-  apiKey.ts                # clé API via expo-secure-store
-  components/              # Card, Row, PlayerModal, AddModal, RecommendModal, SettingsModal
+  supabase.ts                   # client Supabase (auth persistée via AsyncStorage)
+  data.ts                       # couche données (Postgres + appels Edge Functions)
+  types.ts                      # Item, Category, LearningPath
+  theme.ts · util.ts            # palette + helpers
+  video.ts · metadata.ts        # parsing d'URL + résolution oEmbed
+  search.ts                     # recherche instantanée locale (accents)
+  auth/                         # AuthProvider, AuthScreen
+  library/LibraryContext.tsx    # état global items/catégories + modales
+  screens/                      # Home, Search, Paths, Profile
+  components/                   # HeroBillboard, Card, Row, PlayerModal, AddModal, RecommendModal
+
+supabase/
+  migrations/0001_init.sql      # tables, RLS, pgvector, index HNSW, match_items
+  functions/
+    _shared/                    # cors, client, embed (gte-small), anthropic (Claude)
+    index-item/                 # calcule et stocke l'embedding d'un item
+    search/                     # recherche sémantique
+    recommend/                  # recommandations
+    generate-path/              # parcours d'apprentissage
 ```
 
 ## Limites connues
 
-- **Instagram** : pas d'oEmbed public → titre à saisir manuellement ; certains posts bloquent l'embed (l'app propose alors « Ouvrir l'original »).
-- **TikTok** : les liens courts (`vm.tiktok.com`) sont résolus en suivant la redirection ; si ça échoue, l'item reste consultable via « Ouvrir l'original ».
-- Mono-appareil (données locales, pas de synchro) — pensé comme un outil personnel.
-- La clé API vit sur l'appareil : pratique pour un usage perso, à ne pas faire dans une app publique distribuée.
+- **Instagram** : pas d'oEmbed public → titre à saisir manuellement ; certains posts
+  bloquent l'embed (« Ouvrir l'original » en repli).
+- **TikTok** : liens courts (`vm.tiktok.com`) résolus via la redirection.
+- **Transcription auto** : hors scope pour l'instant (colonne `transcript` prévue) —
+  la recherche porte sur tes notes + métadonnées, pas encore sur l'audio des vidéos.
+- **Partage natif** (Partager → Noteflix) : nécessite un build EAS dev (voir SETUP.md).

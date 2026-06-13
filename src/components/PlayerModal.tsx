@@ -14,7 +14,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import type { Item } from "../types";
 import { buildEmbedUrl } from "../video";
-import { markViewed } from "../db";
+import { markViewed } from "../data";
 import { colors } from "../theme";
 
 function formatDate(raw: string): string {
