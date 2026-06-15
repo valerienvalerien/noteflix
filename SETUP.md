@@ -38,13 +38,14 @@ supabase db push
 
 ## 4. Déployer les Edge Functions
 
-Quatre fonctions (le module `embed` est partagé, pas une fonction à déployer) :
+Cinq fonctions (le module `embed` est partagé, pas une fonction à déployer) :
 
 ```bash
 supabase functions deploy index-item
 supabase functions deploy search
 supabase functions deploy recommend
 supabase functions deploy generate-path
+supabase functions deploy backfill
 ```
 
 ## 5. Poser le secret Anthropic
@@ -105,20 +106,24 @@ Expo app (iOS/Android)
 - **Recherche** : embed de la requête → plus proches voisins pgvector (RLS) →
   re-classement + explication par Claude (repli : ordre vectoriel brut).
 
-## Ré-indexer d'anciens items (backfill)
+## Ré-indexer les embeddings (backfill)
 
-Les items créés avant l'activation des embeddings ont `embedding = NULL`. Pour les
-réindexer, appelle `index-item` pour chacun, par ex. via la console SQL :
+Chaque nouvel ajout est indexé automatiquement. Pour réindexer les items sans
+embedding (ou tous, après un changement de modèle), la fonction `backfill` est
+exposée dans l'app : **Profil → ↻ Réindexer la recherche**. Côté code :
+`reindexEmbeddings(force?)` dans `src/data.ts`.
 
-```sql
-select id from public.items where embedding is null;
+## Capture native (Partager → Noteflix)
+
+Le code est en place (`src/share/ShareCapture.tsx` + plugin `expo-share-intent`
+dans `app.json`). Il est **désactivé dans Expo Go** (le hook ne s'active pas) et
+s'active dans un **build dev/EAS** :
+
+```bash
+npm install -g eas-cli
+eas build --profile development --platform ios     # ou android
 ```
 
-puis, côté app/script, `supabase.functions.invoke('index-item', { body: { item_id } })`
-pour chaque id (l'app le fait automatiquement à chaque nouvel ajout).
-
-## Capture native (Partager → Noteflix) — étape future
-
-La capture par presse-papier (bouton « Coller ») fonctionne dans Expo Go. Le
-partage natif depuis TikTok/YouTube/Instagram nécessite `expo-share-intent` + un
-**build EAS dev client** (indisponible dans Expo Go) — à activer plus tard.
+Une fois le dev client installé, « Partager → Noteflix » depuis TikTok/YouTube/
+Instagram ouvre l'ajout pré-rempli avec l'URL. La capture par **presse-papier**
+(bouton « Coller » sur l'accueil) fonctionne, elle, dès Expo Go.

@@ -14,6 +14,7 @@ import PathsScreen from "./src/screens/PathsScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import PlayerModal from "./src/components/PlayerModal";
 import AddModal from "./src/components/AddModal";
+import ShareCapture from "./src/share/ShareCapture";
 import { colors } from "./src/theme";
 
 const Tab = createBottomTabNavigator();
@@ -94,6 +95,7 @@ function Gate() {
         <MainTabs />
       </NavigationContainer>
       <GlobalModals />
+      <ShareCapture />
     </LibraryProvider>
   );
 }

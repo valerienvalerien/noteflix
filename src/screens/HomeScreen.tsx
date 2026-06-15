@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,10 +20,17 @@ import Row from "../components/Row";
 import RecommendModal from "../components/RecommendModal";
 
 export default function HomeScreen() {
-  const { items, loaded, openPlayer, openAdd } = useLibrary();
+  const { items, loaded, error, refresh, openPlayer, openAdd } = useLibrary();
   const insets = useSafeAreaInsets();
   const [showRecommend, setShowRecommend] = useState(false);
   const [clip, setClip] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refresh();
+    setRefreshing(false);
+  }, [refresh]);
 
   // Capture ultra-rapide : si le presse-papier contient un lien vidéo, propose-le.
   useFocusEffect(
@@ -62,8 +70,23 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.root}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
-        {loaded && items.length === 0 ? (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 32 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.textMuted} />
+        }
+      >
+        {loaded && error && items.length === 0 ? (
+          <View style={[styles.empty, { paddingTop: insets.top + 120 }]}>
+            <Text style={styles.emptyEmoji}>⚠️</Text>
+            <Text style={styles.emptyTitle}>Connexion impossible</Text>
+            <Text style={styles.emptyText}>{error}</Text>
+            <Pressable style={styles.emptyBtn} onPress={onRefresh}>
+              <Text style={styles.emptyBtnText}>Réessayer</Text>
+            </Pressable>
+          </View>
+        ) : loaded && items.length === 0 ? (
           <View style={[styles.empty, { paddingTop: insets.top + 120 }]}>
             <Text style={styles.emptyEmoji}>🎬</Text>
             <Text style={styles.emptyTitle}>Ta bibliothèque est vide</Text>

@@ -166,5 +166,5 @@ const styles = StyleSheet.create({
   center: { alignItems: "center", gap: 8, marginTop: 24 },
   muted: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },
   error: { color: "#f87171", fontSize: 13, marginBottom: 10 },
-  grid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", paddingTop: 4 },
+  grid: { flexDirection: "row", flexWrap: "wrap", rowGap: 16, paddingTop: 4 },
 });

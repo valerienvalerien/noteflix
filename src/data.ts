@@ -177,6 +177,15 @@ export async function generatePath(goal: string): Promise<LearningPath> {
   return data.path as LearningPath;
 }
 
+/** Réindexe les embeddings (items sans embedding, ou tous si force=true). */
+export async function reindexEmbeddings(force = false): Promise<number> {
+  const { data, error } = await supabase.functions.invoke("backfill", {
+    body: { force },
+  });
+  if (error) throw new Error(await readFnError(error));
+  return (data?.indexed ?? 0) as number;
+}
+
 export async function listPaths(): Promise<LearningPath[]> {
   const { data, error } = await supabase
     .from("paths")

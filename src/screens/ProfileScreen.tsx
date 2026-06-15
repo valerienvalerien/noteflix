@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { supabase } from "../supabase";
+import { reindexEmbeddings } from "../data";
 import { useAuth } from "../auth/AuthProvider";
 import { useLibrary } from "../library/LibraryContext";
 import { colors } from "../theme";
@@ -11,10 +12,25 @@ export default function ProfileScreen() {
   const { items, categories } = useLibrary();
   const insets = useSafeAreaInsets();
   const [email, setEmail] = useState<string | null>(null);
+  const [reindexing, setReindexing] = useState(false);
+  const [reindexMsg, setReindexMsg] = useState<string | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email ?? null));
   }, []);
+
+  const reindex = async () => {
+    setReindexing(true);
+    setReindexMsg(null);
+    try {
+      const n = await reindexEmbeddings(false);
+      setReindexMsg(n > 0 ? `${n} item(s) réindexé(s).` : "Tout est déjà indexé.");
+    } catch (e) {
+      setReindexMsg(e instanceof Error ? e.message : "Échec de la réindexation.");
+    } finally {
+      setReindexing(false);
+    }
+  };
 
   const videos = items.filter((i) => i.type === "video").length;
   const ideas = items.filter((i) => i.type === "idea").length;
@@ -38,6 +54,15 @@ export default function ProfileScreen() {
           appareils avec ce compte.
         </Text>
       </View>
+
+      <Pressable style={styles.reindex} onPress={reindex} disabled={reindexing}>
+        {reindexing ? (
+          <ActivityIndicator color={colors.text} />
+        ) : (
+          <Text style={styles.reindexText}>↻ Réindexer la recherche</Text>
+        )}
+      </Pressable>
+      {reindexMsg ? <Text style={styles.reindexMsg}>{reindexMsg}</Text> : null}
 
       <Pressable style={styles.signOut} onPress={signOut}>
         <Text style={styles.signOutText}>Se déconnecter</Text>
@@ -79,6 +104,18 @@ const styles = StyleSheet.create({
   statLabel: { color: colors.textMuted, fontSize: 12, marginTop: 4 },
   section: { paddingHorizontal: 16 },
   note: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },
+  reindex: {
+    marginTop: 20,
+    marginHorizontal: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingVertical: 13,
+    alignItems: "center",
+  },
+  reindexText: { color: colors.text, fontWeight: "600", fontSize: 14 },
+  reindexMsg: { color: colors.textMuted, fontSize: 12, textAlign: "center", marginTop: 8 },
   signOut: {
     marginTop: 28,
     marginHorizontal: 16,
