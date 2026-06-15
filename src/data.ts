@@ -20,7 +20,8 @@ function rowToItem(row: ItemRow): Item {
 
 const ITEM_SELECT =
   "id, type, url, platform, video_id, title, description, author, thumbnail, " +
-  "category_id, tags, is_favorite, summary, created_at, view_count, categories(name)";
+  "category_id, tags, is_favorite, summary, created_at, view_count, last_viewed_at, " +
+  "categories(name)";
 
 async function currentUserId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
@@ -58,6 +59,24 @@ export async function listCategories(): Promise<Category[]> {
     .order("name", { ascending: true });
   if (error) throw error;
   return data as Category[];
+}
+
+export async function renameCategory(id: string, name: string): Promise<void> {
+  const { error } = await supabase
+    .from("categories")
+    .update({ name: name.trim() })
+    .eq("id", id);
+  if (error) {
+    throw new Error(
+      error.code === "23505" ? "Une catégorie porte déjà ce nom." : error.message,
+    );
+  }
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  // Les items rattachés repassent en « sans catégorie » (FK on delete set null).
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw error;
 }
 
 async function ensureCategory(userId: string, name: string): Promise<string> {
@@ -180,7 +199,10 @@ export async function markViewed(id: string): Promise<void> {
     .maybeSingle();
   await supabase
     .from("items")
-    .update({ view_count: (data?.view_count ?? 0) + 1 })
+    .update({
+      view_count: (data?.view_count ?? 0) + 1,
+      last_viewed_at: new Date().toISOString(),
+    })
     .eq("id", id);
 }
 
@@ -224,6 +246,29 @@ export async function generatePath(goal: string): Promise<LearningPath> {
   if (error) throw new Error(await readFnError(error));
   if (!data?.path) throw new Error("Aucun parcours généré.");
   return data.path as LearningPath;
+}
+
+/** Met à jour le mot de passe du compte connecté. */
+export async function updatePassword(newPassword: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw error;
+}
+
+/** Export JSON de la bibliothèque (items + parcours) pour portabilité. */
+export async function exportData(): Promise<string> {
+  const [items, paths] = await Promise.all([
+    supabase.from("items").select(ITEM_SELECT).order("created_at", { ascending: false }),
+    supabase.from("paths").select("goal, title, steps, created_at"),
+  ]);
+  if (items.error) throw items.error;
+  if (paths.error) throw paths.error;
+  const payload = {
+    app: "Noteflix",
+    exported_at: new Date().toISOString(),
+    items: (items.data as unknown as ItemRow[]).map(rowToItem),
+    paths: paths.data ?? [],
+  };
+  return JSON.stringify(payload, null, 2);
 }
 
 /** Réindexe les embeddings (items sans embedding, ou tous si force=true). */

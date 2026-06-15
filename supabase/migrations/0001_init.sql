@@ -33,6 +33,7 @@ create table if not exists public.items (
   summary      text,              -- résumé IA (généré à la demande, mis en cache)
   embedding    vector(384),       -- gte-small (Supabase Edge AI)
   view_count   int  not null default 0,
+  last_viewed_at timestamptz,     -- pour la rangée « Reprendre »
   created_at   timestamptz not null default now()
 );
 

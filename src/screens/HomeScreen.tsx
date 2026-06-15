@@ -61,7 +61,11 @@ export default function HomeScreen() {
   const favorites = useMemo(() => items.filter((i) => i.is_favorite), [items]);
   const recent = useMemo(() => items.slice(0, 14), [items]);
   const resume = useMemo(
-    () => items.filter((i) => i.view_count > 0).sort((a, b) => b.view_count - a.view_count).slice(0, 14),
+    () =>
+      items
+        .filter((i) => i.last_viewed_at)
+        .sort((a, b) => (b.last_viewed_at! > a.last_viewed_at! ? 1 : -1))
+        .slice(0, 14),
     [items],
   );
   const byCategory = useMemo(() => {

@@ -23,6 +23,7 @@ export interface Item {
   summary: string | null;
   created_at: string;
   view_count: number;
+  last_viewed_at: string | null;
 }
 
 export interface Category {
