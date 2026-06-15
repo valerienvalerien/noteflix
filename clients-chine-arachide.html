@@ -44,10 +44,32 @@
   a{color:var(--accent2)}
   footer{margin-top:50px;font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:18px}
   footer a{color:var(--muted)}
+  .brand{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+         border-bottom:1px solid var(--line);padding-bottom:16px;margin-bottom:8px}
+  .brand .co{font-size:1.15rem;font-weight:700;color:var(--accent);outline:none;
+             border-bottom:1px dashed var(--line);padding:2px 4px;min-width:160px}
+  .brand .co:empty:before{content:"[ Votre société — cliquez pour éditer ]";color:var(--muted);font-weight:400}
+  .printbtn{background:var(--accent);color:#1a1206;border:none;padding:9px 16px;border-radius:8px;
+            cursor:pointer;font-size:.85rem;font-weight:600;white-space:nowrap}
+  @media print{
+    :root{--bg:#fff;--card:#fff;--ink:#111;--muted:#555;--line:#ccc;--chip:#eee;--accent:#a05a00;--accent2:#3a7d2c}
+    body{background:#fff;color:#111}
+    .printbtn,.tabs{display:none}
+    .pane{display:block !important;page-break-inside:avoid}
+    .mail{background:#f6f6f6;color:#222;border:1px solid #ccc}
+    a{color:#3a7d2c}
+    table,.card,.note,.stat{break-inside:avoid}
+    h2{break-after:avoid}
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<div class="brand">
+  <div class="co" contenteditable="true" spellcheck="false"></div>
+  <button class="printbtn" onclick="window.print()">🖨️ Imprimer / Enregistrer en PDF</button>
+</div>
 
 <header>
   <h1>🥜 Sourcing Arachide — 10 clients potentiels en Chine</h1>
@@ -86,6 +108,54 @@
       <tr><td>8</td><td><strong>Shandong Xingquan Oil Co. Ltd</strong></td><td>Shandong (2003)</td><td>120 000 t/an d'huile d'arachide pressée + 300 000 t de criblage de graines.</td><td><span class="tag s">S</span></td></tr>
       <tr><td>9</td><td><strong>Shandong Juston Cereals &amp; Oil Industry Co. Ltd</strong></td><td>Shandong</td><td>Import-export + transformation profonde de l'arachide.</td><td><span class="tag p">P</span> <span class="tag s">S</span></td></tr>
       <tr><td>10</td><td><strong>« A Yang » (importateur)</strong></td><td>Chine</td><td>Importateur — ~15 % des imports (41 cargaisons). <em>Raison sociale complète à confirmer (données douanières).</em></td><td><span class="tag p">P</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <h2>📇 Coordonnées publiques</h2>
+  <p>Contacts collectés depuis des sources publiques (sites officiels, annuaires). À recouper avant prospection ; les coordonnées directes des acheteurs (mails nominatifs) se sourcent via Volza/Tridge.</p>
+  <table>
+    <thead><tr><th>Entreprise</th><th>Site web</th><th>Tél. / Email</th><th>Adresse</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>Shandong Luhua Group</strong></td>
+        <td><a href="http://www.luhua.cn">luhua.cn</a></td>
+        <td>+86 535 7291705</td>
+        <td>No. 39 Longmen East Road, Laiyang, Shandong</td>
+      </tr>
+      <tr>
+        <td><strong>Shandong Longda Foodstuff Group</strong></td>
+        <td><a href="http://www.longda.com.cn">longda.com.cn</a></td>
+        <td>+86 535 7706586<br>ldgroup@longda.cn</td>
+        <td>Longda Industry Park, Laiyang, Yantai, Shandong</td>
+      </tr>
+      <tr>
+        <td><strong>Qingdao Changsheng Group</strong></td>
+        <td><a href="http://www.changsheng.com.cn">changsheng.com.cn</a></td>
+        <td>Via showroom <a href="https://qdchangsheng.en.made-in-china.com/">Made-in-China</a></td>
+        <td>Qingdao, Shandong</td>
+      </tr>
+      <tr>
+        <td><strong>Shandong Xingquan Oil</strong> <span class="tag">groupe Huaquan</span></td>
+        <td><a href="https://www.made-in-china.com/showroom/sdxqyzgs">Showroom MIC</a></td>
+        <td>Via formulaire MIC</td>
+        <td>East of Meishan Road, Junan County, Linyi, Shandong</td>
+      </tr>
+      <tr>
+        <td><strong>Shandong Juston Cereals &amp; Oil</strong></td>
+        <td><a href="https://www.sdjuston.com/en/">sdjuston.com</a></td>
+        <td>Contact : Ms. Linda<br><a href="https://juston1.en.made-in-china.com/">Showroom MIC</a></td>
+        <td>West of West 6 Road, Junan County, Linyi 276600, Shandong</td>
+      </tr>
+      <tr>
+        <td><strong>Golden Peanut · Guosheng Foods</strong></td>
+        <td colspan="3"><em>À sourcer via <a href="https://www.volza.com/p/peanut/buyers/buyers-in-china/">Volza</a> — situées à Junan/Shandong.</em></td>
+      </tr>
+      <tr>
+        <td><strong>Malipo Pengxiang · Shenzhen Xusunjiacheng · « A Yang »</strong></td>
+        <td colspan="3"><em>Importateurs identifiés via données douanières — coordonnées disponibles sur <a href="https://www.volza.com/p/peanut/buyers/buyers-in-china/">Volza</a> / <a href="https://www.tridge.com/market-overview/raw-peanuts/CN">Tridge</a>.</em></td>
+      </tr>
     </tbody>
   </table>
 </section>
@@ -230,7 +300,11 @@ Best regards,
   <a href="https://www.made-in-china.com/showroom/sdxqyzgs">Made-in-China — Xingquan Oil</a> ·
   <a href="https://regional.chinadaily.com.cn/shandong/qingdao/2018-03/27/c_240276.htm">China Daily — Qingdao Changsheng</a> ·
   <a href="https://www.foodgacc.com/GACC-AQSIQ-CNCA-CIQ-IRE-CIFER-Singlewindow-nuts-and-seeds-registration">FoodGACC — Enregistrement GACC/CIFER fruits à coque</a> ·
-  <a href="https://www.industryarc.com/Research/china-peanuts-market-report-700180">IndustryARC — China Peanuts Market</a><br><br>
+  <a href="https://www.industryarc.com/Research/china-peanuts-market-report-700180">IndustryARC — China Peanuts Market</a> ·
+  <a href="http://www.luhua.cn">Luhua (site officiel)</a> ·
+  <a href="http://www.longda.com.cn/index.html">Longda (site officiel)</a> ·
+  <a href="https://www.sdjuston.com/en/">Juston (site officiel)</a> ·
+  <a href="http://www.changsheng.com.cn/index.html">Changsheng (site officiel)</a><br><br>
   ⚠️ Les parts d'import et la raison sociale « A Yang » proviennent de données douanières agrégées ; à valider via Volza/Tridge avant prospection. Coordonnées directes non incluses (à sourcer).
 </footer>
 
