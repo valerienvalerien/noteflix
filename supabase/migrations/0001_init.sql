@@ -30,6 +30,7 @@ create table if not exists public.items (
   tags         text[] not null default '{}',
   is_favorite  boolean not null default false,   -- « Ma Liste »
   transcript   text,              -- réservé pour la transcription auto (futur)
+  summary      text,              -- résumé IA (généré à la demande, mis en cache)
   embedding    vector(384),       -- gte-small (Supabase Edge AI)
   view_count   int  not null default 0,
   created_at   timestamptz not null default now()

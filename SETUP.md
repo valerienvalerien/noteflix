@@ -38,7 +38,7 @@ supabase db push
 
 ## 4. Déployer les Edge Functions
 
-Cinq fonctions (le module `embed` est partagé, pas une fonction à déployer) :
+Six fonctions (le module `embed` est partagé, pas une fonction à déployer) :
 
 ```bash
 supabase functions deploy index-item
@@ -46,6 +46,7 @@ supabase functions deploy search
 supabase functions deploy recommend
 supabase functions deploy generate-path
 supabase functions deploy backfill
+supabase functions deploy summarize
 ```
 
 ## 5. Poser le secret Anthropic

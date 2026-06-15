@@ -20,7 +20,7 @@ function rowToItem(row: ItemRow): Item {
 
 const ITEM_SELECT =
   "id, type, url, platform, video_id, title, description, author, thumbnail, " +
-  "category_id, tags, is_favorite, created_at, view_count, categories(name)";
+  "category_id, tags, is_favorite, summary, created_at, view_count, categories(name)";
 
 async function currentUserId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
@@ -158,6 +158,15 @@ export async function setFavorite(id: string, value: boolean): Promise<void> {
   if (error) throw error;
 }
 
+/** Génère (ou récupère du cache) un résumé IA d'un item. */
+export async function summarizeItem(id: string): Promise<string> {
+  const { data, error } = await supabase.functions.invoke("summarize", {
+    body: { item_id: id },
+  });
+  if (error) throw new Error(await readFnError(error));
+  return (data?.summary ?? "") as string;
+}
+
 export async function deleteItem(id: string): Promise<void> {
   const { error } = await supabase.from("items").delete().eq("id", id);
   if (error) throw error;
@@ -236,6 +245,11 @@ export async function listPaths(): Promise<LearningPath[]> {
     ...p,
     steps: (p.steps ?? []) as PathStep[],
   }));
+}
+
+export async function updatePathSteps(id: string, steps: PathStep[]): Promise<void> {
+  const { error } = await supabase.from("paths").update({ steps }).eq("id", id);
+  if (error) throw error;
 }
 
 export async function deletePath(id: string): Promise<void> {

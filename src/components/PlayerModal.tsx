@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Linking,
   Modal,
@@ -14,7 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import type { Item } from "../types";
 import { buildEmbedUrl } from "../video";
-import { markViewed } from "../data";
+import { markViewed, summarizeItem } from "../data";
 import { colors } from "../theme";
 
 function formatDate(raw: string): string {
@@ -41,9 +42,25 @@ export default function PlayerModal({
     item.type === "video" && item.platform ? buildEmbedUrl(item.platform, item.video_id, true) : null;
   const isVertical = item.platform === "tiktok" || item.platform === "instagram";
 
+  const [summary, setSummary] = useState<string | null>(item.summary);
+  const [summarizing, setSummarizing] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
+
   useEffect(() => {
     markViewed(item.id).catch(() => {});
   }, [item.id]);
+
+  const generateSummary = async () => {
+    setSummarizing(true);
+    setSummaryError(null);
+    try {
+      setSummary(await summarizeItem(item.id));
+    } catch (e) {
+      setSummaryError(e instanceof Error ? e.message : "Erreur de génération");
+    } finally {
+      setSummarizing(false);
+    }
+  };
 
   const openOriginal = () => {
     if (!item.url) return;
@@ -103,6 +120,26 @@ export default function PlayerModal({
           </View>
 
           {item.description ? <Text style={styles.description}>{item.description}</Text> : null}
+
+          {summary ? (
+            <View style={styles.summaryBox}>
+              <Text style={styles.summaryLabel}>✨ Résumé IA</Text>
+              <Text style={styles.summaryText}>{summary}</Text>
+            </View>
+          ) : (
+            <Pressable
+              style={styles.summaryBtn}
+              onPress={generateSummary}
+              disabled={summarizing}
+            >
+              {summarizing ? (
+                <ActivityIndicator color={colors.text} />
+              ) : (
+                <Text style={styles.summaryBtnText}>✨ Générer un résumé IA</Text>
+              )}
+            </Pressable>
+          )}
+          {summaryError ? <Text style={styles.summaryErrorText}>{summaryError}</Text> : null}
 
           {item.tags.length > 0 && (
             <View style={styles.tagRow}>
@@ -164,6 +201,26 @@ const styles = StyleSheet.create({
   },
   closeText: { color: colors.text, fontSize: 14 },
   description: { color: "#d4d4d8", fontSize: 14, marginTop: 14, lineHeight: 20 },
+  summaryBox: {
+    marginTop: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 14,
+  },
+  summaryLabel: { color: colors.emeraldText, fontSize: 12, fontWeight: "800", marginBottom: 6 },
+  summaryText: { color: "#d4d4d8", fontSize: 14, lineHeight: 21 },
+  summaryBtn: {
+    marginTop: 16,
+    alignSelf: "flex-start",
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  summaryBtnText: { color: colors.text, fontSize: 13, fontWeight: "600" },
+  summaryErrorText: { color: "#f87171", fontSize: 12, marginTop: 8 },
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 14 },
   tag: { backgroundColor: colors.surfaceAlt, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   tagText: { color: "#d4d4d8", fontSize: 12 },

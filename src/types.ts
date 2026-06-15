@@ -1,4 +1,10 @@
-export type Platform = "youtube" | "tiktok" | "instagram" | "other";
+export type Platform =
+  | "youtube"
+  | "tiktok"
+  | "instagram"
+  | "twitter"
+  | "linkedin"
+  | "other";
 
 export interface Item {
   id: string;
@@ -14,6 +20,7 @@ export interface Item {
   category?: string | null;
   tags: string[];
   is_favorite: boolean;
+  summary: string | null;
   created_at: string;
   view_count: number;
 }
@@ -42,6 +49,7 @@ export interface PathStep {
   item_id: string;
   title: string;
   why: string;
+  done?: boolean;
 }
 
 export interface LearningPath {

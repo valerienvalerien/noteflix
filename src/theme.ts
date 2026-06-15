@@ -22,6 +22,8 @@ export const PLATFORM_BADGE: Record<string, { label: string; bg: string; fg: str
   youtube: { label: "YouTube", bg: "#dc2626", fg: "#ffffff" },
   tiktok: { label: "TikTok", bg: "#f4f4f5", fg: "#18181b" },
   instagram: { label: "Instagram", bg: "#c026d3", fg: "#ffffff" },
+  twitter: { label: "X", bg: "#0f1419", fg: "#ffffff" },
+  linkedin: { label: "LinkedIn", bg: "#0a66c2", fg: "#ffffff" },
   other: { label: "Lien", bg: "#3f3f46", fg: "#ffffff" },
 };
 

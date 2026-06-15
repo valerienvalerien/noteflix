@@ -44,5 +44,8 @@ verify_jwt = true
 [functions.backfill]
 verify_jwt = true
 
+[functions.summarize]
+verify_jwt = true
+
 [edge_runtime]
 enabled = true

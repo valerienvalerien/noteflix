@@ -41,6 +41,17 @@ export function parseVideoUrl(rawUrl: string): ParsedVideo | null {
     return { platform: "instagram", videoId: m ? m[2] : null, canonicalUrl: rawUrl };
   }
 
+  // --- X / Twitter (threads & posts) ---
+  if (host === "twitter.com" || host === "x.com" || host.endsWith(".twitter.com") || host.endsWith(".x.com")) {
+    const m = url.pathname.match(/\/status\/(\d+)/);
+    return { platform: "twitter", videoId: m ? m[1] : null, canonicalUrl: rawUrl };
+  }
+
+  // --- LinkedIn (posts) ---
+  if (host.endsWith("linkedin.com")) {
+    return { platform: "linkedin", videoId: null, canonicalUrl: rawUrl };
+  }
+
   return { platform: "other", videoId: null, canonicalUrl: rawUrl };
 }
 

@@ -32,6 +32,10 @@ interface LibraryValue {
   editing: Item | null;
   openEdit: (item: Item) => void;
   closeEdit: () => void;
+  // Catégorie (écran détail)
+  selectedCategory: string | null;
+  openCategory: (name: string) => void;
+  closeCategory: () => void;
   // Mise à jour locale (après édition / favori)
   replaceItem: (item: Item) => void;
   toggleFavorite: (item: Item) => Promise<void>;
@@ -50,6 +54,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [showAdd, setShowAdd] = useState(false);
   const [addUrl, setAddUrl] = useState<string | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -109,6 +114,9 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     editing,
     openEdit: (item: Item) => setEditing(item),
     closeEdit: () => setEditing(null),
+    selectedCategory,
+    openCategory: (name: string) => setSelectedCategory(name),
+    closeCategory: () => setSelectedCategory(null),
     replaceItem,
     toggleFavorite,
     removeItem,

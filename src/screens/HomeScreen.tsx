@@ -20,7 +20,7 @@ import Row from "../components/Row";
 import RecommendModal from "../components/RecommendModal";
 
 export default function HomeScreen() {
-  const { items, loaded, error, refresh, openPlayer, openAdd } = useLibrary();
+  const { items, loaded, error, refresh, openPlayer, openAdd, openCategory } = useLibrary();
   const insets = useSafeAreaInsets();
   const [showRecommend, setShowRecommend] = useState(false);
   const [clip, setClip] = useState<string | null>(null);
@@ -31,6 +31,11 @@ export default function HomeScreen() {
     await refresh();
     setRefreshing(false);
   }, [refresh]);
+
+  const shuffle = () => {
+    if (items.length === 0) return;
+    openPlayer(items[Math.floor(Math.random() * items.length)]);
+  };
 
   // Capture ultra-rapide : si le presse-papier contient un lien vidéo, propose-le.
   useFocusEffect(
@@ -107,7 +112,13 @@ export default function HomeScreen() {
               <Row title="Ajouts récents" items={recent} onOpen={openPlayer} />
               {resume.length > 0 ? <Row title="Reprendre" items={resume} onOpen={openPlayer} /> : null}
               {[...byCategory.entries()].map(([name, rowItems]) => (
-                <Row key={name} title={name} items={rowItems} onOpen={openPlayer} />
+                <Row
+                  key={name}
+                  title={name}
+                  items={rowItems}
+                  onOpen={openPlayer}
+                  onTitlePress={() => openCategory(name)}
+                />
               ))}
             </View>
           </>
@@ -118,6 +129,11 @@ export default function HomeScreen() {
       <View style={[styles.header, { paddingTop: insets.top + 8 }]} pointerEvents="box-none">
         <Text style={styles.logo}>NOTEFLIX</Text>
         <View style={styles.headerActions}>
+          {items.length > 0 ? (
+            <Pressable style={styles.iconCircle} onPress={shuffle}>
+              <Text style={styles.iconCircleText}>🎲</Text>
+            </Pressable>
+          ) : null}
           <Pressable style={styles.pill} onPress={() => setShowRecommend(true)}>
             <Text style={styles.pillText}>✨ Suggère-moi</Text>
           </Pressable>
@@ -180,6 +196,15 @@ const styles = StyleSheet.create({
   },
   logo: { color: colors.red, fontSize: 24, fontWeight: "900", letterSpacing: 0.5 },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 8 },
+  iconCircle: {
+    backgroundColor: "rgba(39,39,42,0.85)",
+    borderRadius: 999,
+    width: 34,
+    height: 34,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconCircleText: { fontSize: 16 },
   pill: {
     backgroundColor: "rgba(39,39,42,0.85)",
     borderRadius: 999,
