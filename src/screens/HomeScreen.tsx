@@ -68,6 +68,16 @@ export default function HomeScreen() {
         .slice(0, 14),
     [items],
   );
+  // « À revoir » : gardé il y a un moment mais pas vu récemment (sans IA).
+  const revisit = useMemo(() => {
+    const now = Date.now();
+    const WEEK = 7 * 864e5;
+    return items
+      .filter((i) => now - new Date(i.created_at).getTime() > WEEK)
+      .filter((i) => !i.last_viewed_at || now - new Date(i.last_viewed_at).getTime() > 2 * WEEK)
+      .sort((a, b) => (a.created_at > b.created_at ? 1 : -1))
+      .slice(0, 14);
+  }, [items]);
   const byCategory = useMemo(() => {
     const map = new Map<string, Item[]>();
     for (const item of items) {
@@ -115,6 +125,9 @@ export default function HomeScreen() {
               {favorites.length > 0 ? <Row title="Ma Liste" items={favorites} onOpen={openPlayer} /> : null}
               <Row title="Ajouts récents" items={recent} onOpen={openPlayer} />
               {resume.length > 0 ? <Row title="Reprendre" items={resume} onOpen={openPlayer} /> : null}
+              {revisit.length > 0 ? (
+                <Row title="Pépites à revoir" items={revisit} onOpen={openPlayer} />
+              ) : null}
               {[...byCategory.entries()].map(([name, rowItems]) => (
                 <Row
                   key={name}
