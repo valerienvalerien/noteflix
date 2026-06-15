@@ -14,7 +14,7 @@ import PathsScreen from "./src/screens/PathsScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import PlayerModal from "./src/components/PlayerModal";
 import AddModal from "./src/components/AddModal";
-import CategoryModal from "./src/components/CategoryModal";
+import CollectionModal from "./src/components/CollectionModal";
 import ShareCapture from "./src/share/ShareCapture";
 import { colors } from "./src/theme";
 
@@ -38,7 +38,6 @@ function tabIcon(emoji: string) {
 
 function GlobalModals() {
   const {
-    items,
     playing,
     openPlayer,
     closePlayer,
@@ -50,8 +49,9 @@ function GlobalModals() {
     editing,
     openEdit,
     closeEdit,
-    selectedCategory,
-    closeCategory,
+    collection,
+    openTag,
+    closeCollection,
     replaceItem,
     categories,
     refresh,
@@ -65,6 +65,7 @@ function GlobalModals() {
           onDelete={removeItem}
           onToggleFavorite={toggleFavorite}
           onEdit={openEdit}
+          onOpenTag={openTag}
         />
       ) : null}
       {showAdd ? (
@@ -89,12 +90,12 @@ function GlobalModals() {
           }}
         />
       ) : null}
-      {selectedCategory ? (
-        <CategoryModal
-          name={selectedCategory}
-          items={items}
+      {collection ? (
+        <CollectionModal
+          title={collection.title}
+          items={collection.items}
           onOpen={openPlayer}
-          onClose={closeCategory}
+          onClose={closeCollection}
         />
       ) : null}
     </>

@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import type { Category, Item } from "../types";
 import { resolveMetadata, ResolvedMeta } from "../metadata";
-import { createItem, updateItem } from "../data";
+import { createItem, findItemByUrl, updateItem } from "../data";
 import { colors } from "../theme";
 
 export default function AddModal({
@@ -45,6 +45,7 @@ export default function AddModal({
       : null,
   );
   const [fetchingMeta, setFetchingMeta] = useState(false);
+  const [dup, setDup] = useState<{ id: string; title: string } | null>(null);
   const [title, setTitle] = useState(item?.title ?? "");
   const [description, setDescription] = useState(item?.description ?? "");
   const [category, setCategory] = useState(item?.category ?? "");
@@ -64,6 +65,9 @@ export default function AddModal({
         if (data) {
           setMeta(data);
           if (data.title && !title) setTitle(data.title);
+          if (!editing) {
+            setDup(await findItemByUrl(data.url));
+          }
         }
       } catch {
         // best-effort
@@ -151,6 +155,9 @@ export default function AddModal({
                 style={styles.input}
               />
               {fetchingMeta ? <Text style={styles.hint}>Récupération des infos…</Text> : null}
+              {dup ? (
+                <Text style={styles.dupWarn}>⚠️ Déjà dans ta bibliothèque : « {dup.title} »</Text>
+              ) : null}
               {meta?.thumbnail ? (
                 <Image source={{ uri: meta.thumbnail }} style={styles.preview} resizeMode="cover" />
               ) : null}
@@ -297,6 +304,7 @@ const styles = StyleSheet.create({
   },
   textarea: { minHeight: 80, textAlignVertical: "top" },
   hint: { color: colors.textFaint, fontSize: 12, marginTop: 6 },
+  dupWarn: { color: "#fbbf24", fontSize: 12, marginTop: 8 },
   preview: { marginTop: 10, height: 120, borderRadius: 10, width: "100%" },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {

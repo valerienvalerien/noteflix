@@ -31,12 +31,14 @@ export default function PlayerModal({
   onDelete,
   onToggleFavorite,
   onEdit,
+  onOpenTag,
 }: {
   item: Item;
   onClose: () => void;
   onDelete: (item: Item) => void;
   onToggleFavorite: (item: Item) => void;
   onEdit: (item: Item) => void;
+  onOpenTag: (tag: string) => void;
 }) {
   const embedUrl =
     item.type === "video" && item.platform ? buildEmbedUrl(item.platform, item.video_id, true) : null;
@@ -150,9 +152,9 @@ export default function PlayerModal({
           {item.tags.length > 0 && (
             <View style={styles.tagRow}>
               {item.tags.map((t) => (
-                <View key={t} style={styles.tag}>
+                <Pressable key={t} style={styles.tag} onPress={() => onOpenTag(t)}>
                   <Text style={styles.tagText}>#{t}</Text>
-                </View>
+                </Pressable>
               ))}
             </View>
           )}

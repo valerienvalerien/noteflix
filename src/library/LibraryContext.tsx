@@ -32,10 +32,11 @@ interface LibraryValue {
   editing: Item | null;
   openEdit: (item: Item) => void;
   closeEdit: () => void;
-  // Catégorie (écran détail)
-  selectedCategory: string | null;
+  // Collection (catégorie / tag → écran détail)
+  collection: { title: string; items: Item[] } | null;
   openCategory: (name: string) => void;
-  closeCategory: () => void;
+  openTag: (tag: string) => void;
+  closeCollection: () => void;
   // Mise à jour locale (après édition / favori)
   replaceItem: (item: Item) => void;
   toggleFavorite: (item: Item) => Promise<void>;
@@ -54,7 +55,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [showAdd, setShowAdd] = useState(false);
   const [addUrl, setAddUrl] = useState<string | null>(null);
   const [editing, setEditing] = useState<Item | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [collection, setCollection] = useState<{ title: string; items: Item[] } | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -114,9 +115,15 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     editing,
     openEdit: (item: Item) => setEditing(item),
     closeEdit: () => setEditing(null),
-    selectedCategory,
-    openCategory: (name: string) => setSelectedCategory(name),
-    closeCategory: () => setSelectedCategory(null),
+    collection,
+    openCategory: (name: string) =>
+      setCollection({
+        title: name,
+        items: items.filter((i) => (i.category ?? "Sans catégorie") === name),
+      }),
+    openTag: (tag: string) =>
+      setCollection({ title: `#${tag}`, items: items.filter((i) => i.tags.includes(tag)) }),
+    closeCollection: () => setCollection(null),
     replaceItem,
     toggleFavorite,
     removeItem,

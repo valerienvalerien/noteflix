@@ -200,6 +200,19 @@ export async function deleteItem(id: string): Promise<void> {
   if (error) throw error;
 }
 
+/** Cherche un item déjà sauvegardé avec la même URL (anti-doublon). */
+export async function findItemByUrl(
+  url: string,
+): Promise<{ id: string; title: string } | null> {
+  const { data } = await supabase
+    .from("items")
+    .select("id, title")
+    .eq("url", url)
+    .limit(1)
+    .maybeSingle();
+  return (data as { id: string; title: string } | null) ?? null;
+}
+
 export async function markViewed(id: string): Promise<void> {
   const { data } = await supabase
     .from("items")
