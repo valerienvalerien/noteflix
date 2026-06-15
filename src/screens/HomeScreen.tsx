@@ -53,6 +53,7 @@ export default function HomeScreen() {
   );
 
   const hero = items[0];
+  const favorites = useMemo(() => items.filter((i) => i.is_favorite), [items]);
   const recent = useMemo(() => items.slice(0, 14), [items]);
   const resume = useMemo(
     () => items.filter((i) => i.view_count > 0).sort((a, b) => b.view_count - a.view_count).slice(0, 14),
@@ -102,6 +103,7 @@ export default function HomeScreen() {
           <>
             {hero ? <HeroBillboard item={hero} onPlay={openPlayer} /> : <View style={{ height: insets.top + 60 }} />}
             <View style={{ marginTop: 8 }}>
+              {favorites.length > 0 ? <Row title="Ma Liste" items={favorites} onOpen={openPlayer} /> : null}
               <Row title="Ajouts récents" items={recent} onOpen={openPlayer} />
               {resume.length > 0 ? <Row title="Reprendre" items={resume} onOpen={openPlayer} /> : null}
               {[...byCategory.entries()].map(([name, rowItems]) => (

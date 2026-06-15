@@ -21,10 +21,21 @@ interface Result {
   reason: string | null;
 }
 
+type FilterKey = "all" | "youtube" | "tiktok" | "instagram" | "idea";
+
+const FILTERS: { key: FilterKey; label: string }[] = [
+  { key: "all", label: "Tous" },
+  { key: "youtube", label: "YouTube" },
+  { key: "tiktok", label: "TikTok" },
+  { key: "instagram", label: "Instagram" },
+  { key: "idea", label: "Idées" },
+];
+
 export default function SearchScreen() {
   const { items, openPlayer } = useLibrary();
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<FilterKey>("all");
   const [aiMode, setAiMode] = useState(false);
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<Result[] | null>(null);
@@ -75,6 +86,16 @@ export default function SearchScreen() {
     if (next && query.trim()) runAi();
   };
 
+  const shown = results
+    ? results.filter(({ item }) =>
+        filter === "all"
+          ? true
+          : filter === "idea"
+            ? item.type === "idea"
+            : item.platform === filter,
+      )
+    : null;
+
   return (
     <View style={styles.root}>
       <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
@@ -103,6 +124,19 @@ export default function SearchScreen() {
             pêche »). Valide pour lancer.
           </Text>
         ) : null}
+        <View style={styles.filters}>
+          {FILTERS.map((f) => (
+            <Pressable
+              key={f.key}
+              onPress={() => setFilter(f.key)}
+              style={[styles.filterChip, filter === f.key && styles.filterChipActive]}
+            >
+              <Text style={[styles.filterText, filter === f.key && styles.filterTextActive]}>
+                {f.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
@@ -113,7 +147,7 @@ export default function SearchScreen() {
           </View>
         ) : null}
         {error ? <Text style={styles.error}>{error}</Text> : null}
-        {results && results.length === 0 && !searching ? (
+        {shown && shown.length === 0 && !searching ? (
           <Text style={styles.muted}>
             Aucun résultat.{!aiMode ? " Essaie la recherche ✨ IA avec une description plus libre." : ""}
           </Text>
@@ -122,7 +156,7 @@ export default function SearchScreen() {
           <Text style={styles.muted}>Tape pour filtrer instantanément ta bibliothèque.</Text>
         ) : null}
         <View style={styles.grid}>
-          {results?.map(({ item, reason }) => (
+          {shown?.map(({ item, reason }) => (
             <Card key={item.id} item={item} reason={reason} onOpen={openPlayer} />
           ))}
         </View>
@@ -162,6 +196,16 @@ const styles = StyleSheet.create({
   aiText: { color: colors.textMuted, fontSize: 13, fontWeight: "700" },
   aiTextActive: { color: "#fff" },
   hint: { color: colors.textFaint, fontSize: 12, marginTop: 8, lineHeight: 17 },
+  filters: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 12 },
+  filterChip: {
+    backgroundColor: colors.surfaceAlt,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  filterChipActive: { backgroundColor: colors.red },
+  filterText: { color: colors.textMuted, fontSize: 12, fontWeight: "600" },
+  filterTextActive: { color: "#fff" },
   body: { padding: 16, paddingBottom: 40 },
   center: { alignItems: "center", gap: 8, marginTop: 24 },
   muted: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },

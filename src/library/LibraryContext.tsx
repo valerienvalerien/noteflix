@@ -6,7 +6,12 @@ import React, {
   useState,
 } from "react";
 import type { Category, Item } from "../types";
-import { deleteItem as removeFromDb, listCategories, listItems } from "../data";
+import {
+  deleteItem as removeFromDb,
+  listCategories,
+  listItems,
+  setFavorite,
+} from "../data";
 
 interface LibraryValue {
   items: Item[];
@@ -23,6 +28,13 @@ interface LibraryValue {
   addUrl: string | null;
   openAdd: (url?: string) => void;
   closeAdd: () => void;
+  // Édition
+  editing: Item | null;
+  openEdit: (item: Item) => void;
+  closeEdit: () => void;
+  // Mise à jour locale (après édition / favori)
+  replaceItem: (item: Item) => void;
+  toggleFavorite: (item: Item) => Promise<void>;
   // Suppression
   removeItem: (item: Item) => Promise<void>;
 }
@@ -37,6 +49,7 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
   const [playing, setPlaying] = useState<Item | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [addUrl, setAddUrl] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Item | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -61,6 +74,19 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
     setItems((xs) => xs.filter((x) => x.id !== item.id));
   }, []);
 
+  const replaceItem = useCallback((item: Item) => {
+    setItems((xs) => xs.map((x) => (x.id === item.id ? item : x)));
+    setPlaying((p) => (p && p.id === item.id ? item : p));
+  }, []);
+
+  const toggleFavorite = useCallback(async (item: Item) => {
+    const next = !item.is_favorite;
+    await setFavorite(item.id, next);
+    const updated = { ...item, is_favorite: next };
+    setItems((xs) => xs.map((x) => (x.id === item.id ? updated : x)));
+    setPlaying((p) => (p && p.id === item.id ? updated : p));
+  }, []);
+
   const value: LibraryValue = {
     items,
     categories,
@@ -80,6 +106,11 @@ export function LibraryProvider({ children }: { children: React.ReactNode }) {
       setShowAdd(false);
       setAddUrl(null);
     },
+    editing,
+    openEdit: (item: Item) => setEditing(item),
+    closeEdit: () => setEditing(null),
+    replaceItem,
+    toggleFavorite,
     removeItem,
   };
 

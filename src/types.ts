@@ -13,6 +13,7 @@ export interface Item {
   category_id: string | null;
   category?: string | null;
   tags: string[];
+  is_favorite: boolean;
   created_at: string;
   view_count: number;
 }

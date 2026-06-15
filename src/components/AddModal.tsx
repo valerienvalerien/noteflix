@@ -13,29 +13,43 @@ import {
 } from "react-native";
 import type { Category, Item } from "../types";
 import { resolveMetadata, ResolvedMeta } from "../metadata";
-import { createItem } from "../data";
+import { createItem, updateItem } from "../data";
 import { colors } from "../theme";
 
 export default function AddModal({
   categories,
   initialUrl,
+  item,
   onClose,
   onCreated,
 }: {
   categories: Category[];
   initialUrl?: string | null;
+  item?: Item | null;
   onClose: () => void;
   onCreated: (item: Item) => void;
 }) {
-  const [mode, setMode] = useState<"video" | "idea">("video");
-  const [url, setUrl] = useState(initialUrl ?? "");
-  const [meta, setMeta] = useState<ResolvedMeta | null>(null);
+  const editing = !!item;
+  const [mode, setMode] = useState<"video" | "idea">(item?.type ?? "video");
+  const [url, setUrl] = useState(item?.url ?? initialUrl ?? "");
+  const [meta, setMeta] = useState<ResolvedMeta | null>(
+    item && item.type === "video"
+      ? {
+          platform: item.platform ?? "other",
+          video_id: item.video_id,
+          url: item.url ?? "",
+          title: item.title,
+          author: item.author,
+          thumbnail: item.thumbnail,
+        }
+      : null,
+  );
   const [fetchingMeta, setFetchingMeta] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [title, setTitle] = useState(item?.title ?? "");
+  const [description, setDescription] = useState(item?.description ?? "");
+  const [category, setCategory] = useState(item?.category ?? "");
   const [newCategory, setNewCategory] = useState("");
-  const [tags, setTags] = useState("");
+  const [tags, setTags] = useState(item ? item.tags.join(", ") : "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -69,23 +83,24 @@ export default function AddModal({
     setSaving(true);
     setError(null);
     const chosenCategory = newCategory.trim() || category || null;
+    const payload = {
+      type: mode,
+      url: mode === "video" ? meta?.url ?? url.trim() ?? null : null,
+      platform: mode === "video" ? meta?.platform ?? null : null,
+      video_id: mode === "video" ? meta?.video_id ?? null : null,
+      title: title.trim(),
+      description: description.trim(),
+      author: mode === "video" ? meta?.author ?? item?.author ?? null : null,
+      thumbnail: mode === "video" ? meta?.thumbnail ?? null : null,
+      category: chosenCategory,
+      tags: tags
+        .split(",")
+        .map((t) => t.trim().replace(/^#/, ""))
+        .filter(Boolean),
+    };
     try {
-      const item = await createItem({
-        type: mode,
-        url: mode === "video" ? meta?.url ?? url.trim() ?? null : null,
-        platform: mode === "video" ? meta?.platform ?? null : null,
-        video_id: mode === "video" ? meta?.video_id ?? null : null,
-        title: title.trim(),
-        description: description.trim(),
-        author: meta?.author ?? null,
-        thumbnail: mode === "video" ? meta?.thumbnail ?? null : null,
-        category: chosenCategory,
-        tags: tags
-          .split(",")
-          .map((t) => t.trim().replace(/^#/, ""))
-          .filter(Boolean),
-      });
-      onCreated(item);
+      const saved = editing ? await updateItem(item!.id, payload) : await createItem(payload);
+      onCreated(saved);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erreur à l'enregistrement");
       setSaving(false);
@@ -99,7 +114,9 @@ export default function AddModal({
         behavior={RNPlatform.OS === "ios" ? "padding" : undefined}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.heading}>Ajouter à ma bibliothèque</Text>
+          <Text style={styles.heading}>
+            {editing ? "Modifier l'item" : "Ajouter à ma bibliothèque"}
+          </Text>
           <Pressable style={styles.closeBtn} onPress={onClose}>
             <Text style={styles.closeText}>✕</Text>
           </Pressable>

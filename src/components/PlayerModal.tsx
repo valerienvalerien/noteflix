@@ -28,10 +28,14 @@ export default function PlayerModal({
   item,
   onClose,
   onDelete,
+  onToggleFavorite,
+  onEdit,
 }: {
   item: Item;
   onClose: () => void;
   onDelete: (item: Item) => void;
+  onToggleFavorite: (item: Item) => void;
+  onEdit: (item: Item) => void;
 }) {
   const embedUrl =
     item.type === "video" && item.platform ? buildEmbedUrl(item.platform, item.video_id, true) : null;
@@ -111,9 +115,20 @@ export default function PlayerModal({
           )}
 
           <View style={styles.actions}>
+            <Pressable
+              style={[styles.secondaryBtn, item.is_favorite && styles.favActive]}
+              onPress={() => onToggleFavorite(item)}
+            >
+              <Text style={[styles.secondaryBtnText, item.is_favorite && styles.favActiveText]}>
+                {item.is_favorite ? "✓ Ma Liste" : "+ Ma Liste"}
+              </Text>
+            </Pressable>
+            <Pressable style={styles.secondaryBtn} onPress={() => onEdit(item)}>
+              <Text style={styles.secondaryBtnText}>Modifier</Text>
+            </Pressable>
             {item.url ? (
               <Pressable style={styles.secondaryBtn} onPress={openOriginal}>
-                <Text style={styles.secondaryBtnText}>Ouvrir l'original ↗</Text>
+                <Text style={styles.secondaryBtnText}>Ouvrir ↗</Text>
               </Pressable>
             ) : null}
             <Pressable style={styles.deleteBtn} onPress={confirmDelete}>
@@ -152,11 +167,13 @@ const styles = StyleSheet.create({
   tagRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginTop: 14 },
   tag: { backgroundColor: colors.surfaceAlt, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 },
   tagText: { color: "#d4d4d8", fontSize: 12 },
-  actions: { flexDirection: "row", alignItems: "center", marginTop: 22, gap: 10 },
+  actions: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", marginTop: 22, gap: 10 },
   primaryBtn: { backgroundColor: colors.red, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
   primaryBtnText: { color: "#fff", fontWeight: "700" },
   secondaryBtn: { backgroundColor: colors.surfaceAlt, borderRadius: 8, paddingHorizontal: 16, paddingVertical: 10 },
   secondaryBtnText: { color: colors.text, fontSize: 13 },
-  deleteBtn: { marginLeft: "auto", paddingHorizontal: 12, paddingVertical: 10 },
+  favActive: { backgroundColor: colors.red },
+  favActiveText: { color: "#fff", fontWeight: "700" },
+  deleteBtn: { paddingHorizontal: 12, paddingVertical: 10 },
   deleteText: { color: "#f87171", fontSize: 13 },
 });

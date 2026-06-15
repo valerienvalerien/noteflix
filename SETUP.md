@@ -116,11 +116,20 @@ exposée dans l'app : **Profil → ↻ Réindexer la recherche**. Côté code :
 ## Capture native (Partager → Noteflix)
 
 Le code est en place (`src/share/ShareCapture.tsx` + plugin `expo-share-intent`
-dans `app.json`). Il est **désactivé dans Expo Go** (le hook ne s'active pas) et
-s'active dans un **build dev/EAS** :
+dans `app.json`, profils dans `eas.json`, `expo-dev-client` installé). Il est
+**désactivé dans Expo Go** (le hook ne s'active pas) et s'active dans un
+**build dev/EAS** :
 
 ```bash
 npm install -g eas-cli
+eas login
+eas init                       # crée le projet EAS (écrit l'id dans app.json)
+
+# Les variables EXPO_PUBLIC_* doivent être présentes au build (elles ne sont pas
+# lues depuis .env automatiquement par EAS) :
+eas env:create --name EXPO_PUBLIC_SUPABASE_URL --value "https://chelxvoflmrjzkwndxts.supabase.co" --environment development
+eas env:create --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value "<ta-clé-anon>" --environment development
+
 eas build --profile development --platform ios     # ou android
 ```
 

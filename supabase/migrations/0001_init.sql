@@ -28,6 +28,7 @@ create table if not exists public.items (
   thumbnail    text,
   category_id  uuid references public.categories (id) on delete set null,
   tags         text[] not null default '{}',
+  is_favorite  boolean not null default false,   -- « Ma Liste »
   transcript   text,              -- réservé pour la transcription auto (futur)
   embedding    vector(384),       -- gte-small (Supabase Edge AI)
   view_count   int  not null default 0,

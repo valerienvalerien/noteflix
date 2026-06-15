@@ -20,7 +20,7 @@ function rowToItem(row: ItemRow): Item {
 
 const ITEM_SELECT =
   "id, type, url, platform, video_id, title, description, author, thumbnail, " +
-  "category_id, tags, created_at, view_count, categories(name)";
+  "category_id, tags, is_favorite, created_at, view_count, categories(name)";
 
 async function currentUserId(): Promise<string> {
   const { data } = await supabase.auth.getUser();
@@ -116,6 +116,46 @@ export async function createItem(input: NewItem): Promise<Item> {
     .catch(() => {});
 
   return rowToItem(row);
+}
+
+export async function updateItem(id: string, input: NewItem): Promise<Item> {
+  const userId = await currentUserId();
+  const categoryId = input.category ? await ensureCategory(userId, input.category) : null;
+
+  const { data, error } = await supabase
+    .from("items")
+    .update({
+      type: input.type,
+      url: input.url ?? null,
+      platform: input.platform ?? null,
+      video_id: input.video_id ?? null,
+      title: input.title,
+      description: input.description ?? "",
+      author: input.author ?? null,
+      thumbnail: input.thumbnail ?? null,
+      category_id: categoryId,
+      tags: input.tags ?? [],
+    })
+    .eq("id", id)
+    .select(ITEM_SELECT)
+    .single();
+  if (error) throw error;
+  const row = data as unknown as ItemRow;
+
+  // Le texte indexable a pu changer → réindexe l'embedding.
+  supabase.functions
+    .invoke("index-item", { body: { item_id: row.id } })
+    .catch(() => {});
+
+  return rowToItem(row);
+}
+
+export async function setFavorite(id: string, value: boolean): Promise<void> {
+  const { error } = await supabase
+    .from("items")
+    .update({ is_favorite: value })
+    .eq("id", id);
+  if (error) throw error;
 }
 
 export async function deleteItem(id: string): Promise<void> {

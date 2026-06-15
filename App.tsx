@@ -36,12 +36,31 @@ function tabIcon(emoji: string) {
 }
 
 function GlobalModals() {
-  const { playing, closePlayer, removeItem, showAdd, addUrl, closeAdd, categories, refresh } =
-    useLibrary();
+  const {
+    playing,
+    closePlayer,
+    removeItem,
+    toggleFavorite,
+    showAdd,
+    addUrl,
+    closeAdd,
+    editing,
+    openEdit,
+    closeEdit,
+    replaceItem,
+    categories,
+    refresh,
+  } = useLibrary();
   return (
     <>
       {playing ? (
-        <PlayerModal item={playing} onClose={closePlayer} onDelete={removeItem} />
+        <PlayerModal
+          item={playing}
+          onClose={closePlayer}
+          onDelete={removeItem}
+          onToggleFavorite={toggleFavorite}
+          onEdit={openEdit}
+        />
       ) : null}
       {showAdd ? (
         <AddModal
@@ -51,6 +70,17 @@ function GlobalModals() {
           onCreated={() => {
             closeAdd();
             refresh();
+          }}
+        />
+      ) : null}
+      {editing ? (
+        <AddModal
+          categories={categories}
+          item={editing}
+          onClose={closeEdit}
+          onCreated={(saved) => {
+            replaceItem(saved);
+            closeEdit();
           }}
         />
       ) : null}
