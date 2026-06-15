@@ -7,6 +7,11 @@
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-opus-4-8";
 
+/** Vrai si une clé Anthropic est configurée (secret Supabase). */
+export function aiEnabled(): boolean {
+  return !!Deno.env.get("ANTHROPIC_API_KEY");
+}
+
 interface ToolUseBlock {
   type: string;
   name?: string;

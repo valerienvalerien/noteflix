@@ -15,7 +15,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import * as WebBrowser from "expo-web-browser";
 import type { Item } from "../types";
 import { buildEmbedUrl } from "../video";
-import { markViewed, summarizeItem } from "../data";
+import { AiDisabledError, markViewed, summarizeItem } from "../data";
 import { colors } from "../theme";
 
 function formatDate(raw: string): string {
@@ -56,7 +56,13 @@ export default function PlayerModal({
     try {
       setSummary(await summarizeItem(item.id));
     } catch (e) {
-      setSummaryError(e instanceof Error ? e.message : "Erreur de génération");
+      setSummaryError(
+        e instanceof AiDisabledError
+          ? "Résumés IA non activés — ajoute une clé Anthropic (secret Supabase)."
+          : e instanceof Error
+            ? e.message
+            : "Erreur de génération",
+      );
     } finally {
       setSummarizing(false);
     }

@@ -11,8 +11,11 @@ import {
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import type { Item } from "../types";
-import { recommend, Recommendation } from "../data";
+import { AiDisabledError, recommend, Recommendation } from "../data";
 import { colors } from "../theme";
+
+const AI_OFF =
+  "✨ Suggestions IA non activées. Ajoute une clé Anthropic (secret Supabase) pour les activer — la recherche, elle, fonctionne déjà.";
 
 export default function RecommendModal({
   items,
@@ -27,18 +30,21 @@ export default function RecommendModal({
   const [loading, setLoading] = useState(false);
   const [suggestions, setSuggestions] = useState<Recommendation[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
 
   const ask = async () => {
     setLoading(true);
     setError(null);
+    setInfo(null);
     setSuggestions(null);
     try {
       const result = await recommend(theme.trim() || null);
       setSuggestions(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erreur");
+      if (e instanceof AiDisabledError) setInfo(AI_OFF);
+      else setError(e instanceof Error ? e.message : "Erreur");
     } finally {
       setLoading(false);
     }
@@ -76,6 +82,7 @@ export default function RecommendModal({
             </View>
           )}
           {error ? <Text style={styles.error}>{error}</Text> : null}
+          {info ? <Text style={styles.info}>{info}</Text> : null}
 
           {suggestions &&
             (suggestions.length === 0 ? (
@@ -176,6 +183,7 @@ const styles = StyleSheet.create({
   loading: { alignItems: "center", marginTop: 26, gap: 10 },
   loadingText: { color: colors.textMuted, fontSize: 13 },
   error: { color: "#f87171", fontSize: 13, marginTop: 16 },
+  info: { color: colors.textMuted, fontSize: 13, marginTop: 16, lineHeight: 19 },
   empty: { color: colors.textMuted, fontSize: 14, marginTop: 20 },
   suggestion: {
     borderWidth: 1,

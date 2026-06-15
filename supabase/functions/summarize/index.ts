@@ -2,7 +2,7 @@
 // titre / auteur / description / tags / transcription.
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { userClient } from "../_shared/client.ts";
-import { callTool } from "../_shared/anthropic.ts";
+import { aiEnabled, callTool } from "../_shared/anthropic.ts";
 
 interface Item {
   id: string;
@@ -21,6 +21,7 @@ Deno.serve(async (req) => {
   try {
     const { item_id, force } = await req.json();
     if (!item_id) return json({ error: "item_id requis" }, 400);
+    if (!aiEnabled()) return json({ ai_disabled: true });
 
     const supabase = userClient(req);
     const { data, error } = await supabase

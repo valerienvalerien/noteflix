@@ -49,13 +49,24 @@ supabase functions deploy backfill
 supabase functions deploy summarize
 ```
 
-## 5. Poser le secret Anthropic
+## 5. (Optionnel) Poser le secret Anthropic — pour activer les fonctions IA
 
-La clé Claude vit **uniquement côté serveur** (jamais sur l'appareil) :
+**Noteflix marche sans clé Anthropic.** La **recherche sémantique** tourne sur des
+embeddings gratuits (`gte-small`). La clé Claude n'active que le « confort IA » :
+**re-classement/explications de recherche, recommandations, résumés, parcours**.
+Sans clé, ces écrans affichent un message « non activé » (rien ne casse).
+
+Pour les activer (clé côté serveur uniquement, jamais sur l'appareil) :
 
 ```bash
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 ```
+
+> Clé sur [console.anthropic.com](https://console.anthropic.com) (facturation à
+> l'usage, séparée d'un abonnement Claude Pro). Pour un usage perso, le coût est
+> de quelques centimes ; le modèle par défaut est `claude-opus-4-8` — tu peux le
+> remplacer par un modèle moins cher (Haiku/Sonnet) dans
+> `supabase/functions/_shared/anthropic.ts`.
 
 > `SUPABASE_URL` et `SUPABASE_ANON_KEY` sont injectées automatiquement dans les
 > fonctions par Supabase — rien à faire.

@@ -11,7 +11,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import type { LearningPath } from "../types";
-import { deletePath, generatePath, listPaths, updatePathSteps } from "../data";
+import {
+  AiDisabledError,
+  deletePath,
+  generatePath,
+  listPaths,
+  updatePathSteps,
+} from "../data";
 import { useLibrary } from "../library/LibraryContext";
 import { colors } from "../theme";
 
@@ -28,6 +34,7 @@ export default function PathsScreen() {
   const [loading, setLoading] = useState(false);
   const [paths, setPaths] = useState<LearningPath[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   const byId = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
 
@@ -39,12 +46,17 @@ export default function PathsScreen() {
     if (!goal.trim()) return;
     setLoading(true);
     setError(null);
+    setInfo(null);
     try {
       const path = await generatePath(goal.trim());
       setPaths((p) => [path, ...p]);
       setGoal("");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Impossible de générer le parcours");
+      if (e instanceof AiDisabledError)
+        setInfo(
+          "🧭 Parcours IA non activés. Ajoute une clé Anthropic (secret Supabase) pour les générer.",
+        );
+      else setError(e instanceof Error ? e.message : "Impossible de générer le parcours");
     } finally {
       setLoading(false);
     }
@@ -106,6 +118,7 @@ export default function PathsScreen() {
           ))}
         </View>
         {error ? <Text style={styles.error}>{error}</Text> : null}
+        {info ? <Text style={styles.info}>{info}</Text> : null}
       </View>
 
       {loading ? (
@@ -222,6 +235,7 @@ const styles = StyleSheet.create({
   },
   chipText: { color: colors.textMuted, fontSize: 12 },
   error: { color: "#f87171", fontSize: 13, marginTop: 12 },
+  info: { color: colors.textMuted, fontSize: 13, marginTop: 12, lineHeight: 18 },
   loading: { alignItems: "center", gap: 8, marginTop: 24 },
   muted: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },
   pathCard: {

@@ -4,7 +4,7 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { userClient } from "../_shared/client.ts";
 import { embed } from "../_shared/embed.ts";
-import { callTool, catalog } from "../_shared/anthropic.ts";
+import { aiEnabled, callTool, catalog } from "../_shared/anthropic.ts";
 
 interface Candidate {
   id: string;
@@ -33,6 +33,11 @@ Deno.serve(async (req) => {
     if (!candidates || candidates.length === 0) return json({ results: [] });
 
     const list = candidates as Candidate[];
+
+    // Sans clé Anthropic : on renvoie directement l'ordre vectoriel (gratuit).
+    if (!aiEnabled()) {
+      return json({ results: list.map((c) => ({ id: c.id, reason: null })) });
+    }
 
     // Re-classement + explication courte par Claude (avec repli robuste).
     try {

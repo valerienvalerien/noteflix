@@ -2,7 +2,7 @@
 // (nouveaux contenus à chercher) à partir de la bibliothèque de l'utilisateur.
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { userClient } from "../_shared/client.ts";
-import { callTool, catalog } from "../_shared/anthropic.ts";
+import { aiEnabled, callTool, catalog } from "../_shared/anthropic.ts";
 
 interface Row {
   id: string;
@@ -18,6 +18,7 @@ interface Row {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    if (!aiEnabled()) return json({ ai_disabled: true });
     const { theme } = await req.json().catch(() => ({ theme: null }));
 
     const supabase = userClient(req);

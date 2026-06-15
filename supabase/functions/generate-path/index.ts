@@ -3,7 +3,7 @@
 import { corsHeaders, json } from "../_shared/cors.ts";
 import { userClient } from "../_shared/client.ts";
 import { embed } from "../_shared/embed.ts";
-import { callTool, catalog } from "../_shared/anthropic.ts";
+import { aiEnabled, callTool, catalog } from "../_shared/anthropic.ts";
 
 interface Candidate {
   id: string;
@@ -18,6 +18,7 @@ interface Candidate {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   try {
+    if (!aiEnabled()) return json({ ai_disabled: true });
     const { goal } = await req.json();
     if (!goal || !String(goal).trim()) return json({ error: "goal requis" }, 400);
 

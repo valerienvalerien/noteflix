@@ -7,6 +7,14 @@ import type {
   PathStep,
 } from "./types";
 
+/** Levée quand une fonction IA est appelée sans clé Anthropic configurée. */
+export class AiDisabledError extends Error {
+  constructor() {
+    super("Fonction IA non activée");
+    this.name = "AiDisabledError";
+  }
+}
+
 // --- Mapping ---------------------------------------------------------------
 
 interface ItemRow extends Omit<Item, "category"> {
@@ -183,6 +191,7 @@ export async function summarizeItem(id: string): Promise<string> {
     body: { item_id: id },
   });
   if (error) throw new Error(await readFnError(error));
+  if (data?.ai_disabled) throw new AiDisabledError();
   return (data?.summary ?? "") as string;
 }
 
@@ -234,6 +243,7 @@ export async function recommend(theme: string | null): Promise<Recommendation[]>
     body: { theme },
   });
   if (error) throw new Error(await readFnError(error));
+  if (data?.ai_disabled) throw new AiDisabledError();
   return (data?.suggestions ?? []) as Recommendation[];
 }
 
@@ -244,6 +254,7 @@ export async function generatePath(goal: string): Promise<LearningPath> {
     body: { goal },
   });
   if (error) throw new Error(await readFnError(error));
+  if (data?.ai_disabled) throw new AiDisabledError();
   if (!data?.path) throw new Error("Aucun parcours généré.");
   return data.path as LearningPath;
 }
